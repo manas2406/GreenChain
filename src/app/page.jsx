@@ -12,6 +12,8 @@ export default function Page() {
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
   const [contract, setContract] = useState(null);
+  const [depositAmount, setDepositAmount] = useState("");
+  const [userBalance, setUserBalance] = useState(null);
 
   // Initialize Provider, Signer, and Contract
   const initializeEthers = async () => {
@@ -56,6 +58,33 @@ export default function Page() {
       setRetrievedValue(result.toString());
     } catch (error) {
       console.error("Error getting value:", error);
+    }
+  };
+
+  // Deposit funds to the contract
+  const depositFunds = async () => {
+    if (!contract) return alert("Please connect wallet first!");
+    try {
+      const tx = await signer.sendTransaction({
+        to: contractAddress.address,
+        value: ethers.parseEther(depositAmount), // Convert to wei
+      });
+      await tx.wait();
+      alert(`Deposited ${depositAmount} ETH successfully!`);
+      setDepositAmount("");
+    } catch (error) {
+      console.error("Error depositing funds:", error);
+    }
+  };
+
+  // Get user balance
+  const getUserBalance = async () => {
+    if (!contract) return alert("Please connect wallet first!");
+    try {
+      const balance = await contract.getBalance(account);
+      setUserBalance(ethers.formatEther(balance)); // Convert from wei to ETH
+    } catch (error) {
+      console.error("Error getting balance:", error);
     }
   };
 
@@ -107,6 +136,33 @@ export default function Page() {
       {/* Display Retrieved Value */}
       {retrievedValue !== null && (
         <p className="text-lg font-bold">Stored Value: {retrievedValue}</p>
+      )}
+
+      {/* Deposit Funds */}
+      <input
+        type="text"
+        value={depositAmount}
+        onChange={(e) => setDepositAmount(e.target.value)}
+        placeholder="Enter ETH to deposit"
+        className="border px-4 py-2 mb-4"
+      />
+      <button 
+        onClick={depositFunds} 
+        className="px-4 py-2 bg-yellow-600 text-white rounded-md mb-4"
+      >
+        Deposit Funds
+      </button>
+
+      {/* Get User Balance */}
+      <button 
+        onClick={getUserBalance} 
+        className="px-4 py-2 bg-red-600 text-white rounded-md mb-4"
+      >
+        Get Balance
+      </button>
+
+      {userBalance !== null && (
+        <p className="text-lg font-bold">Your Balance: {userBalance} ETH</p>
       )}
     </div>
   );
