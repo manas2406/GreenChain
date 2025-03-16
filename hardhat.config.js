@@ -1,3 +1,5 @@
+// filepath: c:\Users\vedan\OneDrive\Desktop\hardhat starter\hardhat.config.js
+require("dotenv").config();
 require("@nomicfoundation/hardhat-toolbox");
 
 /** @type import('hardhat/config').HardhatUserConfig */
@@ -8,7 +10,6 @@ module.exports = {
     tests:"./test",
     cache:"./cache",
     artifacts:"./artifacts"
-
   },
   networks:{
     hardhat:{
@@ -16,7 +17,7 @@ module.exports = {
     },
     sepolia:{
       url:"https://eth-sepolia.g.alchemy.com/v2/8M-A8S59VNodqtUAIom94hhtunRlqYHF",
-      accounts:[process.env.PRIVATE_KEY]
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : []
     }
   },
 };
