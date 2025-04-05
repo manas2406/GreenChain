@@ -16,7 +16,7 @@ module.exports = {
       chainId:1337
     },
     sepolia:{
-      url:"https://eth-sepolia.g.alchemy.com/v2/8M-A8S59VNodqtUAIom94hhtunRlqYHF",
+      url:"https://sepolia.infura.io/v3/1b6b6737c5ee400ab680b7ad31fd67ea",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : []
     }
   },
