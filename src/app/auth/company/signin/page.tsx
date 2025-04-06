@@ -4,45 +4,60 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Wallet, Mail } from "lucide-react"
+import { useAuth } from "@/context/auth-context"
 
 export default function CompanySignIn() {
   const [isLoading, setIsLoading] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const { login, loginWithWallet } = useAuth()
+  const router = useRouter()
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await login(email, password, "company")
+      router.push("/")
+    } catch (error) {
+      console.error("Login failed:", error)
+    } finally {
       setIsLoading(false)
-      // Redirect to dashboard
-      window.location.href = "/dashboard/company"
-    }, 1000)
+    }
   }
 
   const handleWalletConnect = async () => {
     setIsLoading(true)
-    // Simulate wallet connection
-    setTimeout(() => {
+    try {
+      // Simulate wallet connection with a mock address
+      const mockWalletAddress = "0x" + Math.random().toString(36).substring(2, 15)
+      await loginWithWallet(mockWalletAddress, "company")
+      router.push("/")
+    } catch (error) {
+      console.error("Wallet connection failed:", error)
+    } finally {
       setIsLoading(false)
-      // Redirect to dashboard
-      window.location.href = "/dashboard/company"
-    }, 1000)
+    }
   }
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
-    // Simulate Google sign-in
-    setTimeout(() => {
+    try {
+      // Simulate Google sign-in
+      await login("company@example.com", "google-auth", "company")
+      router.push("/")
+    } catch (error) {
+      console.error("Google sign-in failed:", error)
+    } finally {
       setIsLoading(false)
-      // Redirect to dashboard
-      window.location.href = "/dashboard/company"
-    }, 1000)
+    }
   }
 
   return (
@@ -63,7 +78,14 @@ export default function CompanySignIn() {
                 <div className="grid gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="m@example.com" required />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="m@example.com"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
                   </div>
                   <div className="grid gap-2">
                     <div className="flex items-center justify-between">
@@ -75,7 +97,13 @@ export default function CompanySignIn() {
                         Forgot password?
                       </Link>
                     </div>
-                    <Input id="password" type="password" required />
+                    <Input
+                      id="password"
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "Signing in..." : "Sign in"}

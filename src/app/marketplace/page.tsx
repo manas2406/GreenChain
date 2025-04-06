@@ -2,13 +2,24 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Search, Filter, ArrowUpDown, Leaf } from "lucide-react"
+import { Search, Filter, ArrowUpDown, Leaf, Plus } from "lucide-react"
+import { useAuth } from "@/context/auth-context"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
 
 // Mock data for carbon credits
 const carbonCredits = [
@@ -98,6 +109,9 @@ export default function MarketplacePage() {
   const [sortBy, setSortBy] = useState("price-asc")
   const [filterType, setFilterType] = useState("all")
   const [showFilters, setShowFilters] = useState(false)
+  const [showLoginDialog, setShowLoginDialog] = useState(false)
+  const { user } = useAuth()
+  const router = useRouter()
 
   // Filter and sort the carbon credits
   const filteredCredits = carbonCredits
@@ -126,6 +140,17 @@ export default function MarketplacePage() {
       return 0
     })
 
+  const handlePurchase = (creditId: string) => {
+    if (!user) {
+      setShowLoginDialog(true)
+    } else if (user.type === "company") {
+      router.push(`/marketplace/${creditId}`)
+    } else {
+      // NGOs can't purchase
+      alert("Only companies can purchase carbon credits.")
+    }
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
@@ -133,6 +158,16 @@ export default function MarketplacePage() {
           <h1 className="text-3xl font-bold">Carbon Credit Marketplace</h1>
           <p className="text-muted-foreground">Browse and purchase verified carbon credits</p>
         </div>
+        {user?.type === "ngo" && (
+          <div className="mt-4 md:mt-0">
+            <Link href="/marketplace/list">
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                List Credits
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 mb-8">
@@ -237,7 +272,7 @@ export default function MarketplacePage() {
               <Link href={`/marketplace/${credit.id}`}>
                 <Button variant="outline">View Details</Button>
               </Link>
-              <Button>Purchase</Button>
+              <Button onClick={() => handlePurchase(credit.id)}>Purchase</Button>
             </CardFooter>
           </Card>
         ))}
@@ -249,6 +284,42 @@ export default function MarketplacePage() {
           <p className="text-muted-foreground">Try adjusting your filters or search term</p>
         </div>
       )}
+
+      {/* Fixed action button for NGO users on mobile */}
+      {user?.type === "ngo" && (
+        <div className="fixed bottom-6 right-6 md:hidden">
+          <Link href="/marketplace/list">
+            <Button size="icon" className="h-14 w-14 rounded-full shadow-lg">
+              <Plus className="h-6 w-6" />
+            </Button>
+          </Link>
+        </div>
+      )}
+
+      {/* Login Dialog */}
+      <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Sign in Required</DialogTitle>
+            <DialogDescription>You need to sign in to purchase carbon credits.</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <Link href="/auth/company/signin" className="w-full">
+              <Button className="w-full">Sign in as Company</Button>
+            </Link>
+            <Link href="/auth/company/signup" className="w-full">
+              <Button variant="outline" className="w-full">
+                Create Company Account
+              </Button>
+            </Link>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="ghost">Cancel</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

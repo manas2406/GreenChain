@@ -2,16 +2,19 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu, User, LogIn } from "lucide-react"
+import { Menu, User, LogIn, LogOut, LayoutDashboard } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/context/auth-context"
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
+  const { user, logout } = useAuth()
 
   const routes = [
     {
@@ -30,6 +33,11 @@ export default function Navbar() {
       active: pathname === "/about",
     },
   ]
+
+  const handleLogout = () => {
+    logout()
+    router.push("/")
+  }
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background">
@@ -51,42 +59,67 @@ export default function Navbar() {
                 {route.label}
               </Link>
             ))}
+            {user?.type === "ngo" && (
+              <Link
+                href="/marketplace/list"
+                className="flex items-center text-sm font-medium transition-colors hover:text-foreground/80 text-foreground/60"
+              >
+                Sell Credits
+              </Link>
+            )}
           </nav>
         </div>
         <div className="flex items-center gap-2">
           <div className="hidden md:flex md:gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                  Sign In
-                  <LogIn className="ml-2 h-4 w-4" />
+            {user ? (
+              <>
+                <Link href={`/dashboard/${user.type}`}>
+                  <Button variant="outline" size="sm">
+                    Dashboard
+                    <LayoutDashboard className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  Logout
+                  <LogOut className="ml-2 h-4 w-4" />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link href="/auth/company/signin">As Company</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/auth/ngo/signin">As NGO</Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button size="sm">
-                  Sign Up
-                  <User className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link href="/auth/company/signup">As Company</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/auth/ngo/signup">As NGO</Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </>
+            ) : (
+              <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      Sign In
+                      <LogIn className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                      <Link href="/auth/company/signin">As Company</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/auth/ngo/signin">As NGO</Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm">
+                      Sign Up
+                      <User className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                      <Link href="/auth/company/signup">As Company</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/auth/ngo/signup">As NGO</Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
           </div>
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
@@ -114,34 +147,67 @@ export default function Navbar() {
                       {route.label}
                     </Link>
                   ))}
-                  <Link
-                    href="/auth/company/signin"
-                    className="text-sm font-medium transition-colors hover:text-foreground/80"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Sign In as Company
-                  </Link>
-                  <Link
-                    href="/auth/ngo/signin"
-                    className="text-sm font-medium transition-colors hover:text-foreground/80"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Sign In as NGO
-                  </Link>
-                  <Link
-                    href="/auth/company/signup"
-                    className="text-sm font-medium transition-colors hover:text-foreground/80"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Sign Up as Company
-                  </Link>
-                  <Link
-                    href="/auth/ngo/signup"
-                    className="text-sm font-medium transition-colors hover:text-foreground/80"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Sign Up as NGO
-                  </Link>
+                  {user?.type === "ngo" && (
+                    <Link
+                      href="/marketplace/list"
+                      className="text-sm font-medium transition-colors hover:text-foreground/80 text-foreground/60"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Sell Credits
+                    </Link>
+                  )}
+
+                  {user ? (
+                    <>
+                      <Link
+                        href={`/dashboard/${user.type}`}
+                        className="text-sm font-medium transition-colors hover:text-foreground/80"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        Dashboard
+                      </Link>
+                      <button
+                        className="text-sm font-medium transition-colors hover:text-foreground/80 text-left"
+                        onClick={() => {
+                          handleLogout()
+                          setIsOpen(false)
+                        }}
+                      >
+                        Logout
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        href="/auth/company/signin"
+                        className="text-sm font-medium transition-colors hover:text-foreground/80"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        Sign In as Company
+                      </Link>
+                      <Link
+                        href="/auth/ngo/signin"
+                        className="text-sm font-medium transition-colors hover:text-foreground/80"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        Sign In as NGO
+                      </Link>
+                      <Link
+                        href="/auth/company/signup"
+                        className="text-sm font-medium transition-colors hover:text-foreground/80"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        Sign Up as Company
+                      </Link>
+                      <Link
+                        href="/auth/ngo/signup"
+                        className="text-sm font-medium transition-colors hover:text-foreground/80"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        Sign Up as NGO
+                      </Link>
+                    </>
+                  )}
                 </nav>
               </div>
             </SheetContent>

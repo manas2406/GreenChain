@@ -764,6 +764,12 @@ video {
 .top-full {
   top: 100%;
 }
+.bottom-6 {
+  bottom: 1.5rem;
+}
+.right-6 {
+  right: 1.5rem;
+}
 .z-10 {
   z-index: 10;
 }
@@ -984,6 +990,9 @@ video {
 .h-svh {
   height: 100svh;
 }
+.h-14 {
+  height: 3.5rem;
+}
 .max-h-96 {
   max-height: 24rem;
 }
@@ -1089,6 +1098,9 @@ video {
 }
 .w-px {
   width: 1px;
+}
+.w-14 {
+  width: 3.5rem;
 }
 .min-w-0 {
   min-width: 0px;

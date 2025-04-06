@@ -1,93 +1,70 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+
+import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Wallet, Mail } from "lucide-react"
-import { ethers } from "ethers"
-import { MarketplaceABI } from "@/abi/MarketplaceABI" // Update the path
+import { useAuth } from "@/context/auth-context"
 
 export default function NGOSignUp() {
   const [isLoading, setIsLoading] = useState(false)
-  const [walletAddress, setWalletAddress] = useState<string | null>(null)
-  const [contract, setContract] = useState<ethers.Contract | null>(null)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null) // New state for error message
-
-  useEffect(() => {
-    if (window.ethereum) {
-      // MetaMask is available
-    } else {
-      setErrorMessage("MetaMask is not installed. Please install MetaMask to continue.");
-    }
-  }, [])
+  const [ngoName, setNgoName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const { signup, loginWithWallet } = useAuth()
+  const router = useRouter()
 
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (password !== confirmPassword) {
+      alert("Passwords do not match")
+      return
+    }
+
     setIsLoading(true)
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await signup(ngoName, email, password, "ngo")
+      router.push("/")
+    } catch (error) {
+      console.error("Signup failed:", error)
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   const handleWalletConnect = async () => {
     setIsLoading(true)
-    setErrorMessage(null) // Reset error message when starting connection attempt
-
-    // Check if window.ethereum (MetaMask) is available
-    if (typeof window.ethereum !== "undefined") {
-      try {
-        // Request wallet connection (MetaMask) and trigger MetaMask to open
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
-
-        if (accounts.length === 0) {
-          // If no accounts are selected, display error message
-          setErrorMessage("Please connect your MetaMask wallet to continue.")
-          setIsLoading(false)
-          return
-        }
-
-        // Create an ethers provider and signer instance
-        const provider = new ethers.BrowserProvider(window.ethereum)
-        const signer = await provider.getSigner()
-
-        // Get the address from the signer
-        const address = await signer.getAddress()
-        setWalletAddress(address)
-
-        // Initialize the contract after wallet is connected
-        const contractAddress = "YOUR_CONTRACT_ADDRESS" // Replace with your contract address
-        const marketplaceContract = new ethers.Contract(contractAddress, MarketplaceABI, signer)
-        setContract(marketplaceContract)
-
-        // Log the wallet address
-        console.log("Wallet connected:", address)
-
-        // Redirect or update the UI based on wallet connection
-        setIsLoading(false)
-      } catch (error) {
-        console.error("Error connecting wallet:", error)
-        setErrorMessage("Failed to connect wallet. Please grant permission to connect.")
-        setIsLoading(false)
-      }
-    } else {
-      console.error("MetaMask is not installed.")
-      setErrorMessage("MetaMask is not installed. Please install MetaMask to proceed.")
+    try {
+      // Simulate wallet connection with a mock address
+      const mockWalletAddress = "0x" + Math.random().toString(36).substring(2, 15)
+      await loginWithWallet(mockWalletAddress, "ngo")
+      router.push("/")
+    } catch (error) {
+      console.error("Wallet connection failed:", error)
+    } finally {
       setIsLoading(false)
     }
   }
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
-    // Simulate Google sign-in
-    setTimeout(() => {
+    try {
+      // Simulate Google sign-in
+      await signup("Google NGO", "ngo@example.com", "google-auth", "ngo")
+      router.push("/")
+    } catch (error) {
+      console.error("Google sign-in failed:", error)
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   return (
@@ -108,19 +85,44 @@ export default function NGOSignUp() {
                 <div className="grid gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="ngo-name">NGO Name</Label>
-                    <Input id="ngo-name" placeholder="Green Earth Initiative" required />
+                    <Input
+                      id="ngo-name"
+                      placeholder="Green Earth Initiative"
+                      required
+                      value={ngoName}
+                      onChange={(e) => setNgoName(e.target.value)}
+                    />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="m@example.com" required />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="m@example.com"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="password">Password</Label>
-                    <Input id="password" type="password" required />
+                    <Input
+                      id="password"
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="confirm-password">Confirm Password</Label>
-                    <Input id="confirm-password" type="password" required />
+                    <Input
+                      id="confirm-password"
+                      type="password"
+                      required
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "Creating account..." : "Create account"}
@@ -146,15 +148,11 @@ export default function NGOSignUp() {
                   <p className="text-sm text-muted-foreground mb-4">
                     Connect your crypto wallet to create an account. We support multiple blockchain networks.
                   </p>
-                  {errorMessage && (
-                    <div className="text-red-500 text-sm">{errorMessage}</div> // Show error message if any
-                  )}
                 </div>
                 <Button variant="outline" className="w-full" onClick={handleWalletConnect} disabled={isLoading}>
                   <Wallet className="mr-2 h-4 w-4" />
                   {isLoading ? "Connecting..." : "Connect Wallet"}
                 </Button>
-                {walletAddress && <p className="mt-4 text-center">Wallet connected: {walletAddress}</p>}
               </div>
             </TabsContent>
           </Tabs>
@@ -182,3 +180,4 @@ export default function NGOSignUp() {
     </div>
   )
 }
+

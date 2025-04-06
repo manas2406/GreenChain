@@ -2,11 +2,22 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft, Leaf, MapPin, Calendar, Building, FileText, Check } from "lucide-react"
+import { useAuth } from "@/context/auth-context"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
 
 // Mock data for a single carbon credit project
 const projectData = {
@@ -43,11 +54,23 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
   const [quantity, setQuantity] = useState(1)
   const [activeTab, setActiveTab] = useState("overview")
   const [activeImageIndex, setActiveImageIndex] = useState(0)
+  const [showLoginDialog, setShowLoginDialog] = useState(false)
+  const { user } = useAuth()
+  const router = useRouter()
 
   const totalPrice = quantity * projectData.price
 
   const handlePurchase = () => {
-    alert(`Purchasing ${quantity} credits for $${totalPrice.toFixed(2)}`)
+    if (!user) {
+      setShowLoginDialog(true)
+    } else if (user.type === "company") {
+      // Handle purchase logic for company
+      alert(`Purchase successful! You've bought ${quantity} credits for $${totalPrice.toFixed(2)}`)
+      router.push("/dashboard/company")
+    } else {
+      // NGOs can't purchase
+      alert("Only companies can purchase carbon credits.")
+    }
   }
 
   return (
@@ -197,7 +220,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
             </CardContent>
             <CardFooter>
               <Button className="w-full" onClick={handlePurchase}>
-                Purchase Credits
+                {user?.type === "company" ? "Purchase Credits" : "Sign In to Purchase"}
               </Button>
             </CardFooter>
           </Card>
@@ -237,6 +260,31 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
           </Card>
         </div>
       </div>
+
+      {/* Login Dialog */}
+      <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Sign in Required</DialogTitle>
+            <DialogDescription>You need to sign in as a company to purchase carbon credits.</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <Link href="/auth/company/signin" className="w-full">
+              <Button className="w-full">Sign in as Company</Button>
+            </Link>
+            <Link href="/auth/company/signup" className="w-full">
+              <Button variant="outline" className="w-full">
+                Create Company Account
+              </Button>
+            </Link>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="ghost">Cancel</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
