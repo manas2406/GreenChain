@@ -1,10 +1,5 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/dashboard/ngo/page": "app/dashboard/ngo/page.js",
   "/marketplace/page": "app/marketplace/page.js",
-  "/marketplace/list/page": "app/marketplace/list/page.js",
-  "/marketplace/[id]/page": "app/marketplace/[id]/page.js",
-  "/page": "app/page.js",
   "/about/page": "app/about/page.js",
-  "/auth/ngo/signin/page": "app/auth/ngo/signin/page.js"
+  "/page": "app/page.js"
 }

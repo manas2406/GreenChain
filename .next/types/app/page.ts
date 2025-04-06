@@ -1,4 +1,4 @@
-// File: C:\Users\MANAS SHARMA\Desktop\test\GreenChain\src\app\page.tsx
+// File: /Users/parthvijay/Desktop/greenchain10/GreenChain/src/app/page.tsx
 import * as entry from '../../../src/app/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
