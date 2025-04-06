@@ -1,4 +1,4 @@
-// File: D:\gc final\new_hardhat\src\app\layout.jsx
+// File: C:\Users\MANAS SHARMA\Desktop\test\GreenChain\src\app\layout.tsx
 import * as entry from '../../../src/app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
